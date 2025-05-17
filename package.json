@@ -16,5 +16,12 @@
     },
     "peerDependencies": {
         "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "chalk": "^5.4.1",
+        "commander": "^13.1.0",
+        "duckdb": "^1.2.1",
+        "inquirer": "^12.6.1",
+        "mysql2": "^3.14.1"
     }
 }

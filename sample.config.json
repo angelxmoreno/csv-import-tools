@@ -1,0 +1,8 @@
+{
+    "dev": {
+        "host": "localhost",
+        "user": "root",
+        "password": "your-password",
+        "database": "your-database"
+    }
+}
