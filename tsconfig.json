@@ -27,6 +27,8 @@
         // named paths
         "baseUrl": ".",
         "paths": {
+            "@config": ["config.ts"],
+            "@cli/*": ["cli/*"],
             "@lib/*": ["lib/*"],
             "@test/helpers/*": ["tests/helpers/*"]
         }
