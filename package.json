@@ -1,11 +1,20 @@
 {
-  "name": "csv-to-mysql",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  }
+    "name": "csv-to-mysql",
+    "module": "index.ts",
+    "type": "module",
+    "scripts": {
+        "prepare": "if [ \"$CI\" = \"true\" ]; then echo 'CI detected: skipping lefthook install'; else bunx lefthook install; fi",
+        "lint": "bun biome check .",
+        "lint:fix": "bun biome check --write"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^1.9.4",
+        "@commitlint/cli": "^19.8.1",
+        "@commitlint/config-conventional": "^19.8.1",
+        "@types/bun": "latest",
+        "lefthook": "^1.11.13"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    }
 }
