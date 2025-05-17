@@ -27,7 +27,8 @@
         // named paths
         "baseUrl": ".",
         "paths": {
-            "@lib/*": ["lib/*"]
+            "@lib/*": ["lib/*"],
+            "@test/helpers/*": ["tests/helpers/*"]
         }
     }
 }
