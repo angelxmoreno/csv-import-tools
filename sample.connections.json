@@ -1,0 +1,23 @@
+[
+    {
+        "name": "db1",
+        "host": "localhost",
+        "user": "root",
+        "password": "example",
+        "database": "my_database"
+    },
+    {
+        "name": "archive_dump",
+        "host": "192.168.1.100",
+        "user": "archive_user",
+        "password": "securepass",
+        "database": "archive_2024"
+    },
+    {
+        "name": "client_abc",
+        "host": "mysql.client-abc.com",
+        "user": "client_admin",
+        "password": "clientpass",
+        "database": "client_data"
+    }
+]

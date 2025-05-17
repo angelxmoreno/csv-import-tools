@@ -36,4 +36,19 @@ export interface MetadataFile {
     scannedAt: string;
     sourceDir: string;
     files: CsvFileMetadata[];
+    connectionName?: string; // ← optional until set
+}
+
+export interface DbConnectionConfig {
+    name: string;
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    port?: number;
+}
+
+export interface AppConfig {
+    metadataDir: string;
+    connections: DbConnectionConfig[];
 }

@@ -44,14 +44,14 @@ bun add commander chalk mysql2 duckdb inquirer
     * `import`
 * CLI entry point: `cli/index.ts`
 
-## Metadata System
+### Metadata System
 
-### TypeScript Type Definition
+#### TypeScript Type Definition
 
 ```ts
 export interface CsvColumn {
   name: string;
-  type: string; // MySQL type (e.g., INT, TEXT, FLOAT, DATE)
+  type: SqlType;
 }
 
 export interface CsvFileMetadata {
@@ -71,6 +71,7 @@ export interface MetadataFile {
   id: string;
   scannedAt: string;
   sourceDir: string;
+  connectionName?: string;
   files: CsvFileMetadata[];
 }
 ```
@@ -79,49 +80,39 @@ export interface MetadataFile {
 * One JSON file per scan
 * Format includes:
 
-  ```json
-  {
-    "id": "20240517_slug",
-    "scannedAt": "...",
-    "sourceDir": "...",
-    "files": [
-      {
-        "fileName": "file.csv",
-        "fullPath": "...",
-        "size": 12345,
-        "headers": [],
-        "columns": [],
-        "rowCount": 0,
-        "tableName": "sanitized_name",
-        "analyzed": false,
-        "created": false,
-        "imported": false
-      }
-    ]
-  }
-  ```
+    * file metadata
+    * analysis status flags
+    * per-scan `connectionName` added during create/import
 
 ### Configuration
 
-* `config.json` (in project root, not committed)
-* Format:
+* `.env` file:
+
+  ```env
+  METADATA_DIR=metadata
+  MYSQL_CONFIG_PATH=connections.json
+  ```
+* `connections.json`:
 
   ```json
-  {
-    "dev": {
+  [
+    {
+      "name": "db1",
       "host": "localhost",
       "user": "root",
-      "password": "secret",
+      "password": "...",
       "database": "mydb"
-    },
-    "prod": { ... }
-  }
+    }
+  ]
   ```
+* `config.ts` (committed): loads `.env` and `connections.json` and exports:
+
+    * `appConfig.metadataDir`
+    * `appConfig.connections[]`
 
 ### Logger
 
-* `lib/logger.ts`
-* Wraps `console.log` with:
+* `lib/logger.ts`: wraps `console.log` with:
 
     * Tag (`[scan]`, `[analyze]`, etc.)
     * Optional structured data (pretty-printed JSON)
@@ -132,8 +123,9 @@ export interface MetadataFile {
 * `lib/utils.ts`: for sanitizing table names, formatting dates, etc.
 * `lib/duckdb.ts`: for analyzing CSVs using DuckDB
 * `lib/mysql.ts`: for running queries and importing data
-* `lib/prompts.ts`: for selecting metadata files and environments
-* `lib/io.ts`: for reading and writing metadata JSON files (`loadMetadata`, `saveMetadata`, etc.)
+* `lib/prompts.ts`: for selecting metadata files and connections
+* `lib/io.ts`: for reading and writing metadata JSON files
+* `lib/types.ts`: for shared interfaces and enums
 
 ---
 
@@ -168,19 +160,17 @@ export interface MetadataFile {
 
 ### `create`
 
-* List metadata files where all files have `analyzed: true` and `created: false`
-* Let user choose env from `config.json`
-* For each CSV:
-
-    * Generate MySQL `CREATE TABLE` query using metadata
-    * Sanitize table name
-    * Run query using `mysql2`
-    * Update metadata file with `created: true`
+* Prompt user to select a metadata file where all files have `analyzed: true`
+* Prompt user to select a connection from `connections.json`
+* Store `connectionName` in metadata
+* Generate MySQL `CREATE TABLE` query using metadata
+* Run query using `mysql2`
+* Update metadata file with `created: true`
 
 ### `import`
 
-* List metadata files where all files have `created: true` and `imported: false`
-* Let user choose env from `config.json`
+* Prompt user to select a metadata file where all files have `created: true` and a `connectionName`
+* Lookup `connectionName` in `connections.json`
 * For each CSV:
 
     * Connect using `mysql2` with `localInfile: true`
@@ -191,33 +181,28 @@ export interface MetadataFile {
         * `LINES TERMINATED BY '\n'`
         * `IGNORE 1 ROWS`
         * `SET col = NULLIF(col, '')` for null conversion
-    * On error: stop process, log, and do not mark as imported
     * On success: update metadata with `imported: true`
+    * On error: stop process, log, and do not mark as imported
 
 ---
 
 ## Design Decisions (Finalized)
 
-* One JSON per scan; name includes source folder and timestamp
-* Mixed column types → treat as `TEXT` with warning
-* Malformed/missing headers → throw error and halt
-* All phases operate on JSON state files
-* CLI shows all JSONs but only allows valid ones for the step
-* `--force` flag overrides safety checks (e.g., re-run import)
-* All empty strings → `NULL` unless overridden in metadata
-* Metadata tracks `created`, `imported`, timestamps, etc.
-* Default metadata folder: `metadata/`
-* Custom logger with chalk, structured JSON
-* Use `LOAD DATA LOCAL INFILE` via `mysql2` (not CLI)
-* Tables are truncated before import
-* On failure during import, stop process and raise
+* Metadata is saved per scan with one JSON per folder
+* Column type inference via DuckDB with fallback to `TEXT` for mixed types
+* Table name is sanitized from CSV file name
+* Empty strings always converted to `NULL`
+* Connection is selected per metadata file and saved as `connectionName`
+* `connections.json` is an array of profiles
+* `config.ts` exports combined `appConfig`
 
 ---
 
 ## Optional Enhancements (Future)
 
-* Detect duplicate table names before create
-* Add dry-run preview for `create` and `import`
-* CLI flag to auto-fix metadata (e.g., re-infer types)
-* Parallel import mode
-* Report generation: rows imported, time taken, etc.
+* Dry-run support for `create` and `import`
+* `--force` flag to override analysis/creation gating
+* Table name deduplication
+* Metadata repair/auto-fix tooling
+* Report generation
+* Parallel import execution

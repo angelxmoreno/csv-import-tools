@@ -9,7 +9,9 @@ This document breaks down the development of the tool into committable, incremen
 ### 1.1 Create Project Structure
 
 * `cli/`, `lib/`, `metadata/`, `config.json`
+* `tests/unit/lib/` for unit tests
 * Add `.gitignore`, `tsconfig.json`, `README.md`
+* Add `@lib` path alias for `lib/` in `tsconfig.json`
 
 ### 1.2 Install Dependencies
 
@@ -22,16 +24,17 @@ bun add commander chalk mysql2 duckdb inquirer
 * `lib/logger.ts`: structured logger using chalk + console.log
 * `lib/utils.ts`:
 
-    * `sanitizeTableName(name: string): string`
-    * `formatTimestamp(): string`
+  * `sanitizeTableName(name: string): string`
+  * `formatTimestamp(): string`
 * `lib/io.ts`:
 
-    * `loadMetadata(filePath: string): MetadataFile`
-    * `saveMetadata(filePath: string, data: MetadataFile): void`
+  * `loadMetadata(filePath: string): MetadataFile`
+  * `saveMetadata(filePath: string, data: MetadataFile): void`
+  * `requireConnectionName(meta: MetadataFile): string`
 * `lib/prompts.ts`:
 
-    * `selectMetadataFile(stage: 'analyze' | 'create' | 'import'): Promise<string>`
-    * `selectEnvironment(configPath: string): Promise<string>`
+  * `selectMetadataFile(stage: 'analyze' | 'create' | 'import', metadataDir: string): Promise<string>`
+  * `selectConnection(connections: DbConnectionConfig[]): Promise<string>`
 
 ---
 
@@ -41,7 +44,7 @@ bun add commander chalk mysql2 duckdb inquirer
 
 * Read a directory and collect metadata for each `.csv` file:
 
-    * File name, full path, size, modified time
+  * File name, full path, size, modified time
 * Generate a unique metadata file name: `metadata/{timestamp}_{slug}.json`
 
 ### Step 2.2
@@ -58,11 +61,11 @@ bun add commander chalk mysql2 duckdb inquirer
 * Load selected metadata file
 * For each file:
 
-    * Use DuckDB to get:
+  * Use DuckDB to get:
 
-        * Column headers
-        * Column types (inferred)
-        * Row count
+    * Column headers
+    * Column types (inferred)
+    * Row count
 * Warn on mixed types → treat as `TEXT`
 * Throw error on malformed headers
 
@@ -70,7 +73,7 @@ bun add commander chalk mysql2 duckdb inquirer
 
 * Update metadata with:
 
-    * `headers[]`, `columns[]`, `rowCount`, `analyzed: true`
+  * `headers[]`, `columns[]`, `rowCount`, `analyzed: true`
 * Save file with `saveMetadata()`
 
 ---
@@ -79,24 +82,25 @@ bun add commander chalk mysql2 duckdb inquirer
 
 ### Step 4.1
 
-* Use `selectMetadataFile('create')`
-* Use `selectEnvironment()` to load DB credentials
+* Use `selectMetadataFile('create', metadataDir)`
+* Use `selectConnection(connections)` to choose DB profile
+* Store `connectionName` in metadata and save
 
 ### Step 4.2
 
 * For each file:
 
-    * Generate `CREATE TABLE` using metadata
-    * Sanitize table name
-    * Connect using `mysql2`
-    * Execute statement
+  * Generate MySQL `CREATE TABLE` query using metadata
+  * Sanitize table name
+  * Connect using `mysql2`
+  * Execute statement
 
 ### Step 4.3
 
 * Update metadata:
 
-    * `created: true`, `createdAt`
-    * Save with `saveMetadata()`
+  * `created: true`, `createdAt`
+  * Save with `saveMetadata()`
 
 ---
 
@@ -104,16 +108,17 @@ bun add commander chalk mysql2 duckdb inquirer
 
 ### Step 5.1
 
-* Use `selectMetadataFile('import')`
-* Use `selectEnvironment()` for DB
+* Use `selectMetadataFile('import', metadataDir)`
+* Load metadata and extract `connectionName`
+* Look up connection config from `connections.json`
 
 ### Step 5.2
 
 * For each file:
 
-    * Truncate table
-    * Use `LOAD DATA LOCAL INFILE` via `mysql2`
-    * Apply `NULLIF(col, '')` for every column
+  * Truncate table
+  * Use `LOAD DATA LOCAL INFILE` via `mysql2`
+  * Apply `NULLIF(col, '')` for every column
 
 ### Step 5.3
 
@@ -127,6 +132,15 @@ bun add commander chalk mysql2 duckdb inquirer
 * Use fixture CSVs for each phase
 * Validate JSON metadata updates and MySQL changes
 * Confirm logs and errors behave as expected
+
+---
+
+## Design Updates (Finalized)
+
+* Store `connectionName` in metadata file after user selects it via `selectConnection()`
+* Remove use of `MYSQL_CONNECTION` from `.env` — connection is now selected per metadata file
+* Rename `environments.json` → `connections.json` and store as an array of profiles
+* `config.ts` loads `connections.json` and exposes `appConfig.metadataDir` and `appConfig.connections[]`
 
 ---
 
