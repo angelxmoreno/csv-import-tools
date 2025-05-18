@@ -52,3 +52,9 @@ export interface AppConfig {
     metadataDir: string;
     connections: DbConnectionConfig[];
 }
+
+export interface CsvAnalysisResult {
+    headers: string[];
+    types: string[];
+    rowCount: number;
+}
