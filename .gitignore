@@ -105,6 +105,7 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.env.test
 
 # parcel-bundler cache (https://parceljs.org/)
 
@@ -176,3 +177,7 @@ dist
 
 connections.json
 sample
+metadata/*
+!metadata/.gitkeep
+tests/mock-metadata/*
+!tests/mock-metadata/.gitkeep

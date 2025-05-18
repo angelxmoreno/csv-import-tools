@@ -7,7 +7,7 @@
     },
     "files": {
         "ignoreUnknown": false,
-        "ignore": ["node_modules/", "docker/data/", ".idea/"]
+        "ignore": ["node_modules/", "docker/data/", ".idea/", "metadata/"]
     },
     "formatter": {
         "enabled": true,

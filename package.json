@@ -3,6 +3,7 @@
     "module": "index.ts",
     "type": "module",
     "scripts": {
+        "cli": "bun run index.ts",
         "prepare": "if [ \"$CI\" = \"true\" ]; then echo 'CI detected: skipping lefthook install'; else bunx lefthook install; fi",
         "lint": "bun biome check .",
         "lint:fix": "bun biome check --write"
