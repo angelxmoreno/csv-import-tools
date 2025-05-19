@@ -1,9 +1,20 @@
 import { describe, expect, test } from 'bun:test';
-import { connectDb } from '@lib/db';
-import type { DbConnectionConfig } from '@lib/types';
+import { connectDb, createTable } from '@lib/db';
+import type { CsvColumn, DbConnectionConfig } from '@lib/types';
+import { SqlType } from '@lib/types';
 
-describe('connectDb (Docker containers)', () => {
-    test('connects to MariaDB via Docker', async () => {
+const tableName = 'test_table';
+
+const columns: CsvColumn[] = [
+    { name: 'id', type: SqlType.INT },
+    { name: 'name', type: SqlType.TEXT },
+    { name: 'score', type: SqlType.FLOAT },
+    { name: 'is_active', type: SqlType.BOOLEAN },
+    { name: 'created_at', type: SqlType.TIMESTAMP },
+];
+
+describe('connectDb + createTable (Docker containers)', () => {
+    test('MariaDB: connects and creates a table', async () => {
         const config: DbConnectionConfig = {
             name: 'docker-mariadb',
             driver: 'mysql',
@@ -15,12 +26,14 @@ describe('connectDb (Docker containers)', () => {
         };
 
         const db = connectDb(config);
-        const [rows] = await db.raw('SELECT 1 + 1 AS result');
-        expect(rows[0].result).toBe(2);
+        await db.schema.dropTableIfExists(tableName);
+        await createTable(db, tableName, columns);
+        const exists = await db.schema.hasTable(tableName);
+        expect(exists).toBe(true);
         await db.destroy();
     });
 
-    test('connects to Postgres via Docker', async () => {
+    test('Postgres: connects and creates a table', async () => {
         const config: DbConnectionConfig = {
             name: 'docker-postgres',
             driver: 'postgres',
@@ -32,12 +45,14 @@ describe('connectDb (Docker containers)', () => {
         };
 
         const db = connectDb(config);
-        const result = await db.raw('SELECT 1 + 1 AS result');
-        expect(result.rows[0].result).toBe(2);
+        await db.schema.dropTableIfExists(tableName);
+        await createTable(db, tableName, columns);
+        const exists = await db.schema.hasTable(tableName);
+        expect(exists).toBe(true);
         await db.destroy();
     });
 
-    test('connects to SQLite in memory', async () => {
+    test('SQLite: connects and creates a table', async () => {
         const config: DbConnectionConfig = {
             name: 'memory-sqlite',
             driver: 'sqlite',
@@ -45,8 +60,10 @@ describe('connectDb (Docker containers)', () => {
         };
 
         const db = connectDb(config);
-        const result = await db.raw('SELECT 1 + 1 AS result');
-        expect(result[0].result).toBe(2);
+        await db.schema.dropTableIfExists(tableName);
+        await createTable(db, tableName, columns);
+        const exists = await db.schema.hasTable(tableName);
+        expect(exists).toBe(true);
         await db.destroy();
     });
 });

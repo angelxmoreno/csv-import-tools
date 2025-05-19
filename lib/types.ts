@@ -5,8 +5,8 @@ export enum SqlType {
     DOUBLE = 'DOUBLE',
     TEXT = 'TEXT',
     DATE = 'DATE',
-    DATETIME = 'DATETIME',
-    BOOLEAN = 'TINYINT(1)',
+    TIMESTAMP = 'TIMESTAMP',
+    BOOLEAN = 'BOOLEAN',
 }
 
 export const isSqlType = (value: string): value is SqlType => {
