@@ -3,7 +3,6 @@ import { analyzeCsv } from '@lib/duckdb';
 import { loadMetadata, saveMetadata } from '@lib/io';
 import { error, log } from '@lib/logger';
 import { selectMetadataFile } from '@lib/prompts';
-import type { SqlType } from '@lib/types';
 import type { Command } from 'commander';
 
 /**
@@ -20,10 +19,7 @@ export const runAnalyze = async (filePath: string): Promise<void> => {
         const result = await analyzeCsv(file.fullPath);
 
         file.headers = result.headers;
-        file.columns = result.headers.map((name, i) => ({
-            name,
-            type: result.types[i] as SqlType,
-        }));
+        file.columns = result.columns;
         file.rowCount = result.rowCount;
         file.analyzed = true;
 

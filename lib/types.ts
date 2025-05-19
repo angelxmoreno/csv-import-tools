@@ -13,11 +13,6 @@ export const isSqlType = (value: string): value is SqlType => {
     return Object.values(SqlType).includes(value as SqlType);
 };
 
-export interface CsvColumn {
-    name: string;
-    type: SqlType;
-}
-
 export interface CsvFileMetadata {
     fileName: string;
     fullPath: string;
@@ -56,8 +51,15 @@ export interface AppConfig {
     connections: DbConnectionConfig[];
 }
 
+export interface CsvColumn {
+    name: string;
+    sqlType: SqlType;
+    csvType: string;
+    nullable?: boolean;
+}
+
 export interface CsvAnalysisResult {
     headers: string[];
-    types: string[];
+    columns: CsvColumn[];
     rowCount: number;
 }

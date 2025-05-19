@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { runAnalyze } from '@cli/analyze';
 import { appConfig } from '@config';
 import { loadMetadata, saveMetadata } from '@lib/io';
+import { SqlType } from '@lib/types';
 import { formatTimestamp } from '@lib/utils';
 import { createMockMetadata } from '@test/helpers/createMockMetadata';
 
@@ -29,8 +30,9 @@ const metadata = createMockMetadata({
         },
     ],
 });
+
 describe('runAnalyze', () => {
-    test('analyzes headers, types, and row count for each file in metadata', async () => {
+    test('analyzes headers, columns, and row count for each file in metadata', async () => {
         mkdirSync(csvDir, { recursive: true });
 
         writeFileSync(csvPath, 'id,name,species\n1,Alice,cat\n2,Bob,dog\n3,Charlie,bird\n');
@@ -43,8 +45,19 @@ describe('runAnalyze', () => {
 
         expect(file.analyzed).toBe(true);
         expect(file.headers).toEqual(['id', 'name', 'species']);
-        expect(file.columns.length).toBe(3);
         expect(file.rowCount).toBe(3);
+        expect(file.columns.length).toBe(3);
+
+        const get = (name: string) => {
+            const col = file.columns.find((c) => c.name === name);
+            if (!col) throw new Error(`Missing column: ${name}`);
+            return col;
+        };
+
+        expect(get('id').sqlType).toBe(SqlType.INT);
+        expect(get('id').csvType).toMatch(/int/i);
+        expect(get('name').sqlType).toBe(SqlType.TEXT);
+        expect(get('species').nullable).toBe(false);
     });
 
     test('cleanup', () => {
