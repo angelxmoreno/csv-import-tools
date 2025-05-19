@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import type { AppConfig, DbConnectionConfig } from '@lib/types';
 
 const metadataDir = String(Bun.env.METADATA_DIR || 'metadata');
-const connectionsPath = String(Bun.env.MYSQL_CONFIG_PATH || 'connections.json');
+const connectionsPath = String(Bun.env.CONNECTIONS_PATH || 'connections.json');
 let connections: DbConnectionConfig[] = [];
 const fullPath = join(process.cwd(), connectionsPath);
 

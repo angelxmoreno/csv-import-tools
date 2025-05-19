@@ -38,14 +38,17 @@ export interface MetadataFile {
     files: CsvFileMetadata[];
     connectionName?: string; // ← optional until set
 }
+export type DbDriver = 'mysql' | 'postgres' | 'sqlite';
 
 export interface DbConnectionConfig {
     name: string;
-    host: string;
-    user: string;
-    password: string;
-    database: string;
+    driver: DbDriver;
     port?: number;
+    host?: string;
+    user?: string;
+    password?: string;
+    database?: string;
+    filename?: string; // used for SQLite
 }
 
 export interface AppConfig {

@@ -1,23 +1,23 @@
 [
     {
-        "name": "db1",
+        "name": "docker-mariadb",
+        "driver": "mysql",
         "host": "localhost",
-        "user": "root",
-        "password": "example",
-        "database": "my_database"
+        "user": "mariadb",
+        "password": "mariadb",
+        "database": "mariadb"
     },
     {
-        "name": "archive_dump",
-        "host": "192.168.1.100",
-        "user": "archive_user",
-        "password": "securepass",
-        "database": "archive_2024"
+        "name": "docker-postgres",
+        "driver": "postgres",
+        "host": "localhost",
+        "user": "postgres",
+        "password": "postgres",
+        "database": "postgres"
     },
     {
-        "name": "client_abc",
-        "host": "mysql.client-abc.com",
-        "user": "client_admin",
-        "password": "clientpass",
-        "database": "client_data"
+        "name": "local-sqlite",
+        "driver": "sqlite",
+        "filename": "./data/dev.sqlite3"
     }
 ]

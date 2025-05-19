@@ -90,7 +90,7 @@ export interface MetadataFile {
 
   ```env
   METADATA_DIR=metadata
-  MYSQL_CONFIG_PATH=connections.json
+  CONNECTIONS_PATH=connections.json
   ```
 * `connections.json`:
 
