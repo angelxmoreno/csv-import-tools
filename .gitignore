@@ -176,8 +176,11 @@ dist
 .DS_Store
 
 connections.json
+connections.test.json
 sample
 metadata/*
 !metadata/.gitkeep
 tests/mock-metadata/*
 !tests/mock-metadata/.gitkeep
+data/*
+!data/.gitkeep
