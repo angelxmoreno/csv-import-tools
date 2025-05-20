@@ -6,11 +6,11 @@ import { SqlType } from '@lib/types';
 const tableName = 'test_table';
 
 const columns: CsvColumn[] = [
-    { name: 'id', type: SqlType.INT },
-    { name: 'name', type: SqlType.TEXT },
-    { name: 'score', type: SqlType.FLOAT },
-    { name: 'is_active', type: SqlType.BOOLEAN },
-    { name: 'created_at', type: SqlType.TIMESTAMP },
+    { name: 'id', sqlType: SqlType.INT, csvType: 'INT', nullable: false },
+    { name: 'name', sqlType: SqlType.TEXT, csvType: 'VARCHAR', nullable: true },
+    { name: 'score', sqlType: SqlType.FLOAT, csvType: 'FLOAT', nullable: true },
+    { name: 'is_active', sqlType: SqlType.BOOLEAN, csvType: 'BOOLEAN', nullable: false },
+    { name: 'created_at', sqlType: SqlType.TIMESTAMP, csvType: 'TIMESTAMP', nullable: false },
 ];
 
 describe('connectDb + createTable (Docker containers)', () => {

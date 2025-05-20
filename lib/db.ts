@@ -1,39 +1,6 @@
-import type { CsvColumn, DbConnectionConfig } from '@lib/types';
+import type { CsvColumn, DbConnectionConfig, SqlType } from '@lib/types';
+import { isSqlType } from '@lib/types';
 import knex, { type Knex } from 'knex';
-
-export const createTable = async (db: Knex, tableName: string, columns: CsvColumn[]): Promise<void> => {
-    const exists = await db.schema.hasTable(tableName);
-    if (exists) {
-        throw new Error(`Table '${tableName}' already exists`);
-    }
-
-    await db.schema.createTable(tableName, (table) => {
-        for (const col of columns) {
-            switch (col.type) {
-                case 'INT':
-                    table.integer(col.name);
-                    break;
-                case 'FLOAT':
-                    table.float(col.name);
-                    break;
-                case 'TEXT':
-                    table.text(col.name);
-                    break;
-                case 'BOOLEAN':
-                    table.boolean(col.name);
-                    break;
-                case 'DATE':
-                    table.date(col.name);
-                    break;
-                case 'TIMESTAMP':
-                    table.timestamp(col.name);
-                    break;
-                default:
-                    table.specificType(col.name, col.type); // fallback
-            }
-        }
-    });
-};
 
 export const connectDb = (config: DbConnectionConfig): Knex => {
     const client = (() => {
@@ -64,5 +31,61 @@ export const connectDb = (config: DbConnectionConfig): Knex => {
         client,
         connection,
         useNullAsDefault: config.driver === 'sqlite',
+    });
+};
+
+export const createTable = async (db: Knex, tableName: string, columns: CsvColumn[]): Promise<void> => {
+    const exists = await db.schema.hasTable(tableName);
+    if (exists) {
+        throw new Error(`Table '${tableName}' already exists`);
+    }
+
+    await db.schema.createTable(tableName, (table) => {
+        for (const col of columns) {
+            const sqlType = col.sqlType as SqlType;
+
+            if (!isSqlType(sqlType)) {
+                throw new Error(`Unknown data type: '${col.sqlType}'`);
+            }
+
+            let builder: Knex.ColumnBuilder;
+
+            switch (sqlType) {
+                case 'INT':
+                    builder = table.integer(col.name);
+                    break;
+                case 'BIGINT':
+                    builder = table.bigInteger(col.name);
+                    break;
+                case 'FLOAT':
+                    builder = table.float(col.name);
+                    break;
+                case 'DOUBLE':
+                    builder = table.double(col.name);
+                    break;
+                case 'TEXT':
+                    builder = table.text(col.name);
+                    break;
+                case 'BOOLEAN':
+                    builder = table.boolean(col.name);
+                    break;
+                case 'DATE':
+                    builder = table.date(col.name);
+                    break;
+                case 'TIMESTAMP':
+                    builder = table.timestamp(col.name);
+                    break;
+                default:
+                    builder = table.specificType(col.name, sqlType);
+                    break;
+            }
+
+            // Apply nullability
+            if (col.nullable) {
+                builder.nullable();
+            } else {
+                builder.notNullable();
+            }
+        }
     });
 };

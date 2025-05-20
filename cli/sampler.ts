@@ -21,8 +21,8 @@ type Pet = {
     id: string;
     owner_id: string;
     animal_id: string;
-    name: string;
-    dob: Date;
+    name?: string;
+    dob?: Date;
 };
 
 const createOwners = (): { headers: string[]; rows: PetOwner[] } => {
@@ -86,8 +86,8 @@ const createPets = (petOwners: PetOwner[], animals: Animal[]): { headers: string
                 id: faker.string.uuid(),
                 owner_id: petOwner.id,
                 animal_id: faker.helpers.arrayElement(animals).id,
-                name: faker.animal.petName(),
-                dob: faker.date.past({ years: 7 }),
+                name: faker.helpers.arrayElement(['', faker.animal.petName()]),
+                dob: faker.helpers.arrayElement([undefined, faker.date.past({ years: 7 })]),
             });
         }
     }

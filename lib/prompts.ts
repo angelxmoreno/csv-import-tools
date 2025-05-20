@@ -6,7 +6,7 @@ import inquirer from 'inquirer';
 
 function shouldDisableFile(meta: MetadataFile, stage: 'analyze' | 'create' | 'import'): false | string {
     if (stage === 'create') {
-        const valid = meta.files.every((file) => file.analyzed && !file.created && !!meta.connectionName);
+        const valid = meta.files.every((file) => file.analyzed && !file.created);
         return valid ? false : 'Not ready';
     }
 
