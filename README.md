@@ -53,19 +53,36 @@ CSV file metadata is saved to JSON files in a directory (default: `metadata/`). 
 bun test
 
 # Format using Biome
-bun run fmt
+bun lint:fix
 ```
 
 ## Environment
 
 Create a `.env` file (or use `.env.test` for testing):
 
+```bash
+# For development
+cp sample.env .env
+cp sample.connections.json connections.json
+
+# For testing
+cp sample.env .env.test
+cp sample.connections.json connections.test.json
+```
+
+````env
+METADATA_DIR=metadata
+MYSQL_PORT=3306 # for docker-compose
+POSTGRES_PORT=5432 # for docker-compose
+MYSQL_CONFIG_PATH=connections.json
+``` (or use `.env.test` for testing):
+
 ```env
 METADATA_DIR=metadata
-MYSQL_PORT=3306
-POSTGRES_PORT=5432
+MYSQL_PORT=3306 # for docker-compose
+POSTGRES_PORT=5432 # for docker-compose
 MYSQL_CONFIG_PATH=connections.json
-```
+````
 
 ## [License](LICENSE)
 
