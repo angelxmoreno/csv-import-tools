@@ -20,9 +20,6 @@ cp sample.connections.json connections.json
 # Install dependencies
 bun install
 
-# Start databases via Docker
-docker compose up -d
-
 # Generate sample CSVs
 bun cli sampler sample
 
